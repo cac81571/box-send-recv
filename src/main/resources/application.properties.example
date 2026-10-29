@@ -1,0 +1,37 @@
+# 実行方法:
+#   1. scripts\start-edge-cdp.bat で Edge を起動し、Box にログインする
+#   2. scripts\run-watch.bat
+# 別の設定ファイル:
+#   scripts\run-watch.bat --config=C:/path/to/application.properties
+
+# --- Box ---
+box.enterprise.domain=app.box.com
+box.folder.id=432035791114
+# box.folder.url=https://your-corp.ent.box.com/folder/123456789
+
+# --- ローカル ---
+local.watch.path=C:/work/box-exchange
+file.send.prefix=S_
+file.receive.prefix=R_
+file.extensions=
+watch.interval.seconds=10
+
+# --- Teams（任意）---
+teams.notification.enabled=false
+# teams.webhook.url=https://prod-xx.japaneast.logic.azure.com/workflows/...
+# teams.notification.title.send.success=Box ファイル送信完了
+# teams.notification.title.receive.success=Box ファイル受信完了
+# teams.notification.title.error=Box 送受信エラー
+
+# --- ブラウザ（CDP 必須）---
+browser.cdp.url=http://localhost:9222
+browser.slow.mo=100
+browser.timeout.ms=60000
+browser.timeout.retry.count=2
+box.upload.complete.timeout.ms=120000
+box.login.wait.seconds=300
+
+# --- ログ ---
+logging.file.path=./logs
+logging.level=INFO
+logging.console.charset=UTF-8

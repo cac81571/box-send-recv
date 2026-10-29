@@ -1,0 +1,11 @@
+target/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+application.properties
+edge-cdp-profile/
+playwright-user-data/
+logs/
+*.log
