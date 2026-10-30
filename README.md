@@ -65,6 +65,7 @@ scripts\run-watch.bat --config=C:/work/config/application.properties
 3. `S_` ファイルを、監視フォルダからの相対パスどおり Box へ送信する。無いフォルダは Box 上に作る。完了後は同じ場所で接頭辞を外して上書きリネームする
 4. `R_` ファイルは、同じ相対パスの Box ファイルをダウンロードして上書きし、`R_` を削除する
 5. `watch.interval.seconds` 待って繰り返す
+6. 送信または受信が失敗してもプロセスは終了しない。失敗したファイルは接頭辞が残るので、次の間隔で再試行する
 
 `~$` や `.tmp` などの一時ファイルは対象外です。
 
@@ -81,6 +82,9 @@ Box へは接頭辞を除いたファイル名で上げます。同名があれ�
 | `file.receive.prefix` | 受信判定（既定 `R_`） |
 | `watch.interval.seconds` | 監視間隔 |
 | `browser.cdp.url` | CDP URL（必須、例: `http://localhost:9222`） |
+| `teams.notification.enabled` | Teams 通知（既定 `false`） |
+| `teams.notification.scope` | `all`（成功とエラー）または `error`（エラーのみ）。通知が有効なときに使う |
+| `teams.webhook.url` | Teams の Workflow Webhook。通知を有効にしたときは必須 |
 
 ## ログイン
 

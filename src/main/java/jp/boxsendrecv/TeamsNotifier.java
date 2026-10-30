@@ -21,6 +21,7 @@ public class TeamsNotifier {
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private final boolean enabled;
+    private final boolean notifySuccess;
     private final String webhookUrl;
     private final String sendSuccessTitle;
     private final String receiveSuccessTitle;
@@ -29,20 +30,31 @@ public class TeamsNotifier {
 
     public TeamsNotifier(Config config) {
         this.enabled = config.isTeamsNotificationEnabled();
+        this.notifySuccess = config.isTeamsNotifySuccess();
         this.webhookUrl = config.getTeamsWebhookUrl();
         this.sendSuccessTitle = config.getTeamsNotificationTitleSendSuccess();
         this.receiveSuccessTitle = config.getTeamsNotificationTitleReceiveSuccess();
         this.genericErrorTitle = config.getTeamsNotificationTitleError();
         if (!enabled) {
             log.info("Teams 通知は無効です (teams.notification.enabled=false)");
+        } else if (notifySuccess) {
+            log.info("Teams 通知: 成功とエラー (teams.notification.scope=all)");
+        } else {
+            log.info("Teams 通知: エラーのみ (teams.notification.scope=error)");
         }
     }
 
     public void sendSentFiles(List<ProcessedFile> files, String boxFolderLabel) throws IOException {
+        if (!notifySuccess) {
+            return;
+        }
         notifyFiles(files, sendSuccessTitle, "Box 送信先: " + boxFolderLabel);
     }
 
     public void sendReceivedFiles(List<ProcessedFile> files, Path receivedPath) throws IOException {
+        if (!notifySuccess) {
+            return;
+        }
         notifyFiles(files, receiveSuccessTitle, "保存先: " + PathDisplay.forTeams(receivedPath));
     }
 

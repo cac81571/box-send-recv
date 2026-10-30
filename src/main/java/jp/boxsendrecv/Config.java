@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ public class Config {
     private final String teamsNotificationTitleSendSuccess;
     private final String teamsNotificationTitleReceiveSuccess;
     private final String teamsNotificationTitleError;
+    private final boolean teamsNotifySuccess;
     private final String browserCdpUrl;
     private final int browserSlowMo;
     private final int browserTimeoutMs;
@@ -70,6 +72,9 @@ public class Config {
         teamsNotificationTitleError = propertyWithDefault(
             properties, "teams.notification.title.error", "Box 送受信エラー"
         );
+        teamsNotifySuccess = parseTeamsNotificationScope(
+            propertyWithDefault(properties, "teams.notification.scope", "all")
+        );
 
         browserCdpUrl = properties.getProperty("browser.cdp.url", "").trim();
         if (browserCdpUrl.isEmpty()) {
@@ -96,6 +101,19 @@ public class Config {
         localWatchPath = Paths.get(require(properties, "local.watch.path"));
         sendPrefix = propertyWithDefault(properties, "file.send.prefix", "S_");
         receivePrefix = propertyWithDefault(properties, "file.receive.prefix", "R_");
+    }
+
+    private static boolean parseTeamsNotificationScope(String scope) {
+        String normalized = scope.toLowerCase(Locale.ROOT);
+        if ("all".equals(normalized)) {
+            return true;
+        }
+        if ("error".equals(normalized)) {
+            return false;
+        }
+        throw new IllegalArgumentException(
+            "teams.notification.scope は all または error を指定してください: " + scope
+        );
     }
 
     private static String resolveEnterpriseDomain(String configured, String folderUrl) {
@@ -297,6 +315,10 @@ public class Config {
 
     public String getTeamsNotificationTitleError() {
         return teamsNotificationTitleError;
+    }
+
+    public boolean isTeamsNotifySuccess() {
+        return teamsNotifySuccess;
     }
 
     public String getBrowserCdpUrl() {

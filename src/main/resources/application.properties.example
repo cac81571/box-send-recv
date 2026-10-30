@@ -18,6 +18,9 @@ watch.interval.seconds=10
 
 # --- Teams（任意）---
 teams.notification.enabled=false
+# teams.notification.scope=all
+#   all   : 送信・受信の成功とエラーを通知
+#   error : エラーのみ通知
 # teams.webhook.url=https://prod-xx.japaneast.logic.azure.com/workflows/...
 # teams.notification.title.send.success=Box ファイル送信完了
 # teams.notification.title.receive.success=Box ファイル受信完了
