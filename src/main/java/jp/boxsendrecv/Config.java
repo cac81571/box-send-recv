@@ -28,6 +28,7 @@ public class Config {
     private final String sendPrefix;
     private final String receivePrefix;
     private final int watchIntervalSeconds;
+    private final Path processStopFile;
     private final Set<String> fileExtensions;
     private final boolean teamsNotificationEnabled;
     private final String teamsWebhookUrl;
@@ -103,8 +104,18 @@ public class Config {
         boxEnterpriseDomain = resolveEnterpriseDomain(configuredDomain, folderUrl);
         boxFolderUrl = resolveFolderUrl(folderId, folderUrl, boxEnterpriseDomain);
         localWatchPath = Paths.get(require(properties, "local.watch.path"));
+        processStopFile = resolveProcessStopFile(optional(properties, "process.stop.file"), localWatchPath);
         sendPrefix = propertyWithDefault(properties, "file.send.prefix", "S_");
         receivePrefix = propertyWithDefault(properties, "file.receive.prefix", "R_");
+    }
+
+    private static Path resolveProcessStopFile(String configured, Path watchPath) {
+        if (configured == null || configured.isBlank()) {
+            return null;
+        }
+        Path path = Paths.get(configured);
+        Path resolved = path.isAbsolute() ? path : watchPath.resolve(path);
+        return resolved.toAbsolutePath().normalize();
     }
 
     private static Set<String> parseNameSet(String raw) {
@@ -308,6 +319,17 @@ public class Config {
 
     public int getWatchIntervalSeconds() {
         return watchIntervalSeconds;
+    }
+
+    public Path getProcessStopFile() {
+        return processStopFile;
+    }
+
+    public boolean isProcessStopFile(Path path) {
+        if (processStopFile == null || path == null) {
+            return false;
+        }
+        return processStopFile.equals(path.toAbsolutePath().normalize());
     }
 
     public Set<String> getFileExtensions() {

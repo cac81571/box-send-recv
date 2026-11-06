@@ -47,6 +47,7 @@ final class LocalWatch {
                 .filter(path -> nameMatches.test(path.getFileName().toString()))
                 .filter(path -> config.matchesExtension(path.getFileName().toString()))
                 .filter(path -> !isTransient(path))
+                .filter(path -> !config.isProcessStopFile(path))
                 .sorted(Comparator.comparing(path -> path.toString().toLowerCase(Locale.ROOT)))
                 .forEach(files::add);
         }

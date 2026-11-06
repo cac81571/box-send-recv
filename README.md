@@ -81,6 +81,7 @@ Box へは接頭辞を除いたファイル名で上げます。同名があれ�
 | `file.send.prefix` | 送信判定（既定 `S_`） |
 | `file.receive.prefix` | 受信判定（既定 `R_`） |
 | `watch.interval.seconds` | 監視間隔 |
+| `process.stop.file` | このファイルを検知したらプロセスを終了する。監視フォルダからの相対パス。検知後に削除する |
 | `browser.cdp.url` | CDP URL（必須、例: `http://localhost:9222`） |
 | `teams.notification.enabled` | Teams 通知（既定 `false`） |
 | `teams.notification.scope` | `all`（成功とエラー）または `error`（エラーのみ）。通知が有効なときに使う |

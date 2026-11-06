@@ -15,6 +15,9 @@ file.send.prefix=S_
 file.receive.prefix=R_
 file.extensions=
 watch.interval.seconds=10
+# このファイルを検知したらプロセスを終了する。監視フォルダからの相対パス。空なら無効。
+# 検知後にファイルは削除する。
+# process.stop.file=STOP
 
 # --- Teams（任意）---
 teams.notification.enabled=false

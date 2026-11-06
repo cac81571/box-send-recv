@@ -3,6 +3,8 @@ package jp.boxsendrecv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,8 +45,16 @@ final class WatchLoop {
                 String.join(", ", config.getTeamsExcludeFolderNames())
             );
         }
+        if (config.getProcessStopFile() != null) {
+            log.info("停止ファイル: {}", config.getProcessStopFile());
+        }
 
         while (running) {
+            if (consumeStopFile()) {
+                log.info("停止ファイルを検知したためプロセスを終了します: {}", config.getProcessStopFile());
+                running = false;
+                break;
+            }
             try {
                 List<ProcessedFile> sent = processSends();
                 List<ProcessedFile> received = processReceives();
@@ -102,6 +112,19 @@ final class WatchLoop {
             }
         }
         return processed;
+    }
+
+    private boolean consumeStopFile() {
+        Path stopFile = config.getProcessStopFile();
+        if (stopFile == null || !Files.isRegularFile(stopFile)) {
+            return false;
+        }
+        try {
+            Files.deleteIfExists(stopFile);
+        } catch (IOException e) {
+            log.warn("停止ファイルを削除できませんでした: {} ({})", stopFile, e.getMessage());
+        }
+        return true;
     }
 
     private void notifyErrorOnce(String key, String action, Path file, Exception e) {
