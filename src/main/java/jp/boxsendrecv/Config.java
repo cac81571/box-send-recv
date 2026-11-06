@@ -35,6 +35,7 @@ public class Config {
     private final String teamsNotificationTitleReceiveSuccess;
     private final String teamsNotificationTitleError;
     private final boolean teamsNotifySuccess;
+    private final Set<String> teamsExcludeFolderNames;
     private final String browserCdpUrl;
     private final int browserSlowMo;
     private final int browserTimeoutMs;
@@ -75,6 +76,9 @@ public class Config {
         teamsNotifySuccess = parseTeamsNotificationScope(
             propertyWithDefault(properties, "teams.notification.scope", "all")
         );
+        teamsExcludeFolderNames = parseNameSet(
+            properties.getProperty("teams.notification.exclude.folder.names", "")
+        );
 
         browserCdpUrl = properties.getProperty("browser.cdp.url", "").trim();
         if (browserCdpUrl.isEmpty()) {
@@ -101,6 +105,19 @@ public class Config {
         localWatchPath = Paths.get(require(properties, "local.watch.path"));
         sendPrefix = propertyWithDefault(properties, "file.send.prefix", "S_");
         receivePrefix = propertyWithDefault(properties, "file.receive.prefix", "R_");
+    }
+
+    private static Set<String> parseNameSet(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return Set.of();
+        }
+        return Arrays.stream(raw.split(","))
+            .map(String::trim)
+            .map(name -> name.replace('\\', '/'))
+            .map(name -> name.replaceAll("^/+", "").replaceAll("/+$", ""))
+            .filter(name -> !name.isEmpty())
+            .map(name -> name.toLowerCase(Locale.ROOT))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private static boolean parseTeamsNotificationScope(String scope) {
@@ -319,6 +336,26 @@ public class Config {
 
     public boolean isTeamsNotifySuccess() {
         return teamsNotifySuccess;
+    }
+
+    public Set<String> getTeamsExcludeFolderNames() {
+        return teamsExcludeFolderNames;
+    }
+
+    public boolean isMonitoringFolderFile(String relativePath) {
+        if (relativePath == null || relativePath.isBlank() || teamsExcludeFolderNames.isEmpty()) {
+            return false;
+        }
+        String[] parts = relativePath.replace('\\', '/').split("/");
+        if (parts.length < 2) {
+            return false;
+        }
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (teamsExcludeFolderNames.contains(parts[i].toLowerCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getBrowserCdpUrl() {

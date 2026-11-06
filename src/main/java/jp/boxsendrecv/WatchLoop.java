@@ -37,6 +37,12 @@ final class WatchLoop {
             config.getReceivePrefix(),
             config.getLocalWatchPath().toAbsolutePath()
         );
+        if (!config.getTeamsExcludeFolderNames().isEmpty()) {
+            log.info(
+                "Teams 成功通知の対象外フォルダ: {}",
+                String.join(", ", config.getTeamsExcludeFolderNames())
+            );
+        }
 
         while (running) {
             try {
@@ -127,11 +133,26 @@ final class WatchLoop {
 
     private void notifyCycle(List<ProcessedFile> sent, List<ProcessedFile> received) {
         try {
-            notifier.sendSentFiles(sent, config.getBoxFolderUrl());
-            notifier.sendReceivedFiles(received, config.getLocalWatchPath());
+            notifier.sendSentFiles(filesForTeamsSuccess(sent), config.getBoxFolderUrl());
+            notifier.sendReceivedFiles(filesForTeamsSuccess(received), config.getLocalWatchPath());
         } catch (Exception e) {
             log.warn("Teams 通知の送信に失敗しました: {}", e.getMessage());
         }
+    }
+
+    private List<ProcessedFile> filesForTeamsSuccess(List<ProcessedFile> files) {
+        if (!config.isTeamsNotificationEnabled() || !config.isTeamsNotifySuccess()) {
+            return files;
+        }
+        List<ProcessedFile> included = new ArrayList<>();
+        for (ProcessedFile file : files) {
+            if (config.isMonitoringFolderFile(file.fileName())) {
+                log.info("監視用フォルダのため Teams 成功通知を省略しました: {}", file.fileName());
+                continue;
+            }
+            included.add(file);
+        }
+        return included;
     }
 
     private String displayName(Path file) {

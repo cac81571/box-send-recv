@@ -84,6 +84,7 @@ Box へは接頭辞を除いたファイル名で上げます。同名があれ�
 | `browser.cdp.url` | CDP URL（必須、例: `http://localhost:9222`） |
 | `teams.notification.enabled` | Teams 通知（既定 `false`） |
 | `teams.notification.scope` | `all`（成功とエラー）または `error`（エラーのみ）。通知が有効なときに使う |
+| `teams.notification.exclude.folder.names` | 成功通知から除外するフォルダ名。`test` なら `test/R_xxx` の成功は通知しない。エラーは通知する |
 | `teams.webhook.url` | Teams の Workflow Webhook。通知を有効にしたときは必須 |
 
 ## ログイン

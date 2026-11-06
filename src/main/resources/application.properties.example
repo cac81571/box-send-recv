@@ -21,6 +21,9 @@ teams.notification.enabled=false
 # teams.notification.scope=all
 #   all   : 送信・受信の成功とエラーを通知
 #   error : エラーのみ通知
+# 成功通知から除外するフォルダ名（カンマ区切り）。パス中のフォルダ名が一致するファイルは通知しない。エラーは通知する。
+# 例: test なら test/R_xxx の成功は通知しない
+# teams.notification.exclude.folder.names=test
 # teams.webhook.url=https://prod-xx.japaneast.logic.azure.com/workflows/...
 # teams.notification.title.send.success=Box ファイル送信完了
 # teams.notification.title.receive.success=Box ファイル受信完了
