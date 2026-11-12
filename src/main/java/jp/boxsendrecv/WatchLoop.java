@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 final class WatchLoop {
     private static final Logger log = LoggerFactory.getLogger(WatchLoop.class);
@@ -17,7 +17,7 @@ final class WatchLoop {
     private final Config config;
     private final BoxBrowserAutomation automation;
     private final TeamsNotifier notifier;
-    private final Map<String, String> notifiedErrors = new HashMap<>();
+    private final Set<String> notifiedErrors = new HashSet<>();
     private volatile boolean running = true;
 
     WatchLoop(Config config, BoxBrowserAutomation automation, TeamsNotifier notifier) {
@@ -135,9 +135,9 @@ final class WatchLoop {
         } else {
             log.error("{}に失敗しました。監視を継続します: {} ({})", action, target, detail, e);
         }
-        if (detail.equals(notifiedErrors.get(key))) {
+        if (notifiedErrors.contains(key)) {
             if (config.isTeamsNotificationEnabled()) {
-                log.info("同じエラーが続いているため Teams 通知は省略しました: {}", target.isEmpty() ? action : target);
+                log.info("同じファイルの失敗が続いているため Teams 通知は省略しました: {}", target.isEmpty() ? action : target);
             }
             return;
         }
@@ -147,7 +147,7 @@ final class WatchLoop {
         try {
             notifier.sendError(text);
             if (config.isTeamsNotificationEnabled()) {
-                notifiedErrors.put(key, detail);
+                notifiedErrors.add(key);
             }
         } catch (Exception notifyError) {
             log.warn("Teams エラー通知の送信に失敗しました: {}", notifyError.getMessage());
