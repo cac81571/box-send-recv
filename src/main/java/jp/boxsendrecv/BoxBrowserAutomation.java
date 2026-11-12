@@ -42,6 +42,28 @@ public class BoxBrowserAutomation implements AutoCloseable {
         this.config = config;
     }
 
+    public void keepSession() {
+        String keepFolderUrl = config.getBoxSessionKeepFolderUrl();
+        String folderId = extractFolderId(keepFolderUrl);
+        String previousFolderUrl = activeFolderUrl;
+        activeFolderUrl = keepFolderUrl;
+        try {
+            log.info("セッション維持のためフォルダを開きます: " + keepFolderUrl);
+            navigateToFolderUrl(keepFolderUrl);
+            waitForFolderUrl(folderId);
+            if (folderId != null && (page.url() == null || !page.url().contains("/folder/" + folderId))) {
+                throw new IllegalStateException(
+                    "セッション維持のフォルダを開けませんでした: " + keepFolderUrl + " / 現在: " + page.url()
+                );
+            }
+            ensureFolderAccessible();
+            logCurrentFolderState();
+            log.info("セッション維持のフォルダを開きました: " + keepFolderUrl);
+        } finally {
+            activeFolderUrl = previousFolderUrl;
+        }
+    }
+
     public void startSession() throws Exception {
         activeFolderUrl = config.getBoxFolderUrl();
         Files.createDirectories(config.getLocalWatchPath());

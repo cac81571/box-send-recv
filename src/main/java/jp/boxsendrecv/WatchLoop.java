@@ -49,20 +49,54 @@ final class WatchLoop {
             log.info("停止ファイル: {}", config.getProcessStopFile());
         }
 
+        long watchIntervalMillis = config.getWatchIntervalSeconds() * 1000L;
+        long keepIntervalMillis = config.getBoxSessionKeepIntervalSeconds() * 1000L;
+        if (keepIntervalMillis > 0) {
+            log.info(
+                "セッション維持: 間隔 {} 秒 / フォルダ {}",
+                config.getBoxSessionKeepIntervalSeconds(),
+                config.getBoxSessionKeepFolderUrl()
+            );
+        }
+        long nextWatchAt = System.currentTimeMillis();
+        long nextKeepAt = keepIntervalMillis == 0
+            ? Long.MAX_VALUE
+            : System.currentTimeMillis() + keepIntervalMillis;
+
         while (running) {
             if (consumeStopFile()) {
                 log.info("停止ファイルを検知したためプロセスを終了します: {}", config.getProcessStopFile());
                 running = false;
                 break;
             }
-            try {
-                List<ProcessedFile> sent = processSends();
-                List<ProcessedFile> received = processReceives();
-                notifyCycle(sent, received);
-            } catch (Exception e) {
-                notifyErrorOnce("cycle", "監視処理", null, e);
+            long now = System.currentTimeMillis();
+            if (now >= nextWatchAt) {
+                try {
+                    List<ProcessedFile> sent = processSends();
+                    List<ProcessedFile> received = processReceives();
+                    notifyCycle(sent, received);
+                } catch (Exception e) {
+                    notifyErrorOnce("cycle", "監視処理", null, e);
+                }
+                nextWatchAt = System.currentTimeMillis() + watchIntervalMillis;
             }
-            sleepQuietly(config.getWatchIntervalSeconds() * 1000L);
+            if (keepIntervalMillis > 0 && System.currentTimeMillis() >= nextKeepAt) {
+                keepSessionQuietly();
+                nextKeepAt = System.currentTimeMillis() + keepIntervalMillis;
+            }
+            long sleepMillis = Math.min(nextWatchAt, nextKeepAt) - System.currentTimeMillis();
+            if (sleepMillis > 0) {
+                sleepQuietly(sleepMillis);
+            }
+        }
+    }
+
+    private void keepSessionQuietly() {
+        try {
+            automation.keepSession();
+            notifiedErrors.remove("session-keep");
+        } catch (Exception e) {
+            notifyErrorOnce("session-keep", "セッション維持", null, e);
         }
     }
 

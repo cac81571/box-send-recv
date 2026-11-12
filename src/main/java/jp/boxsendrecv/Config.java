@@ -23,6 +23,8 @@ public class Config {
     private static final Logger log = LoggerFactory.getLogger(Config.class);
 
     private final String boxFolderUrl;
+    private final int boxSessionKeepIntervalSeconds;
+    private final String boxSessionKeepFolderUrl;
     private final String boxEnterpriseDomain;
     private final Path localWatchPath;
     private final String sendPrefix;
@@ -103,6 +105,15 @@ public class Config {
         String configuredDomain = optional(properties, "box.enterprise.domain");
         boxEnterpriseDomain = resolveEnterpriseDomain(configuredDomain, folderUrl);
         boxFolderUrl = resolveFolderUrl(folderId, folderUrl, boxEnterpriseDomain);
+        boxSessionKeepIntervalSeconds = Integer.parseInt(
+            properties.getProperty("box.session.keep.interval.seconds", "0")
+        );
+        if (boxSessionKeepIntervalSeconds < 0) {
+            throw new IllegalArgumentException("box.session.keep.interval.seconds は 0 以上である必要があります");
+        }
+        boxSessionKeepFolderUrl = resolveSessionKeepFolderUrl(
+            properties, boxSessionKeepIntervalSeconds, boxFolderUrl, boxEnterpriseDomain
+        );
         localWatchPath = Paths.get(require(properties, "local.watch.path"));
         processStopFile = resolveProcessStopFile(optional(properties, "process.stop.file"), localWatchPath);
         sendPrefix = propertyWithDefault(properties, "file.send.prefix", "S_");
@@ -153,6 +164,23 @@ public class Config {
             return host;
         }
         throw new IllegalArgumentException("box.enterprise.domain または box.folder.url を設定してください");
+    }
+
+    private static String resolveSessionKeepFolderUrl(
+        Properties properties,
+        int intervalSeconds,
+        String boxFolderUrl,
+        String domain
+    ) {
+        if (intervalSeconds == 0) {
+            return "";
+        }
+        String folderId = properties.getProperty("box.session.keep.folder.id", "").trim();
+        String folderUrl = properties.getProperty("box.session.keep.folder.url", "").trim();
+        if (folderId.isEmpty() && folderUrl.isEmpty()) {
+            return boxFolderUrl;
+        }
+        return resolveFolderUrl(folderId, folderUrl, domain);
     }
 
     private static String resolveFolderUrl(String folderId, String folderUrl, String domain) {
@@ -299,6 +327,14 @@ public class Config {
 
     public String getBoxFolderUrl() {
         return boxFolderUrl;
+    }
+
+    public int getBoxSessionKeepIntervalSeconds() {
+        return boxSessionKeepIntervalSeconds;
+    }
+
+    public String getBoxSessionKeepFolderUrl() {
+        return boxSessionKeepFolderUrl;
     }
 
     public String getBoxEnterpriseDomain() {

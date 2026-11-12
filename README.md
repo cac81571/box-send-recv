@@ -77,6 +77,8 @@ Box へは接頭辞を除いたファイル名で上げます。同名があれ�
 |------|------|
 | `box.enterprise.domain` | 企業 Box のホスト |
 | `box.folder.url` / `box.folder.id` | 送信先フォルダ |
+| `box.session.keep.interval.seconds` | セッション維持でフォルダを開く間隔（秒）。0 で無効。監視間隔とは別 |
+| `box.session.keep.folder.url` / `box.session.keep.folder.id` | セッション維持で開くフォルダ。未設定なら送受信フォルダ |
 | `local.watch.path` | 監視ルート |
 | `file.send.prefix` | 送信判定（既定 `S_`） |
 | `file.receive.prefix` | 受信判定（既定 `R_`） |
